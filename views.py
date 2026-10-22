@@ -767,7 +767,7 @@ def _verify_step(email: str):
 
 
 SITE_SETTINGS = [  # (clé, libellé, valeur par défaut, aide)
-    ("LOGIN_STYLE", "Style de la page de connexion", "glass", "glass = carte vitrée dorée · lamp = lampe (tirer le cordon) · panda. Aperçu : ?login=lamp"),
+    ("LOGIN_STYLE", "Style de la page de connexion", "lamp", "glass = carte vitrée dorée · lamp = lampe (tirer le cordon) · panda. Aperçu : ?login=lamp"),
     ("PRO_PRICE_TEXT", "Prix affiché de la formule Pro", "50 $ / mois", "Ex. : 99 $ / mois"),
     ("CONTACT_WHATSAPP", "Numéro WhatsApp (avec indicatif, sans +)", "", "Ex. : 212612345678 — le bouton de contact s'affiche s'il est rempli"),
     ("CONTACT_LABEL", "Texte du bouton de contact", "Pour info, contacter TIMAR", ""),
@@ -906,12 +906,12 @@ def _form_setup():
 
 
 def login_style() -> str:
-    """glass (défaut) | lamp | panda : ?login=… pour un aperçu, sinon réglage du site LOGIN_STYLE."""
+    """lamp (défaut) | glass | panda : ?login=… pour un aperçu, sinon réglage du site LOGIN_STYLE."""
     try:
         q = str(st.query_params.get("login", "")).lower()
     except Exception:  # noqa: BLE001
         q = ""
-    s = q or str(_site("LOGIN_STYLE", "glass")).strip().lower()
+    s = q or str(_site("LOGIN_STYLE", "lamp")).strip().lower()
     return {"lampe": "lamp", "lamp": "lamp", "panda": "panda"}.get(s, "glass")
 
 
