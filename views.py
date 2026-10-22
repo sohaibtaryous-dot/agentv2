@@ -1010,8 +1010,6 @@ def render_auth():
                             _form_setup()
                         _auth_switch_buttons(mode, setup_ok, inline=True)
             if login_ok is not None:                                     # animation « Most Secure Login » puis entrée dans le site
-                card_main.empty()
-                ui_motion.secure_login((login_ok.get("email") or "").split("@")[0])
                 st.session_state["auth_user"] = login_ok
                 st.rerun()
 
