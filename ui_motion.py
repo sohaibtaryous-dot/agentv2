@@ -70,7 +70,7 @@ div[class*="st-key-auth_side_"] p {{ font-size:.85rem; color:rgba(255,245,225,.8
 .sec-ring {{ position:relative; width:104px; height:104px; margin:0 auto; border-radius:50%; display:grid; place-items:center; color:#F5D27A;
   border:2px solid rgba(224,177,58,.55); box-shadow:0 0 30px rgba(224,177,58,.25), inset 0 0 20px rgba(224,177,58,.12); }}
 .sec-ring::after {{ content:""; position:absolute; inset:-9px; border-radius:50%; border:2px solid transparent; border-top-color:#F5D27A; border-right-color:rgba(245,210,122,.35);
-  animation: otp-spin 1.1s linear 2.2 forwards; }}
+  animation: otp-spin .8s linear 2 forwards; }}
 .sec-ring.ok {{ color:#4ADE80; border-color:rgba(34,197,94,.8); box-shadow:0 0 34px rgba(34,197,94,.4); }}
 .sec-ring.ok::after {{ display:none; }}
 .sec-steps {{ display:flex; flex-direction:column; gap:.75rem; }}
@@ -79,6 +79,12 @@ div[class*="st-key-auth_side_"] p {{ font-size:.85rem; color:rgba(255,245,225,.8
   animation: sec-tick .35s var(--d) forwards; }}
 @keyframes sec-lit {{ to {{ color:#F3EBDD }} }}
 @keyframes sec-tick {{ to {{ background:#22C55E; border-color:#22C55E; color:#04210f; box-shadow:0 0 12px rgba(34,197,94,.6) }} }}
+/* Allègement : plus d'animation permanente sur la page entière (fluidité, surtout sur PC modestes / connexion lente) */
+.stApp, .stApp::before, .stApp::after {{ animation:none !important; }}
+.block-container [data-testid="stVerticalBlock"] > div {{ animation:none !important; }}
+.stButton > button[kind="primary"]:not(:disabled), .stButton > button[kind="primary"]:not(:disabled)::after {{ animation:none !important; }}
+[data-testid="stFileUploaderDropzone"], [data-testid="stProgress"] div, [data-testid="stProgress"] > div > div {{ animation:none !important; }}
+@media (prefers-reduced-motion: reduce) {{ *, *::before, *::after {{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }} }}
 </style>
 """
 
@@ -92,9 +98,9 @@ def inject():
     st.markdown(CSS, unsafe_allow_html=True)
 
 
-def secure_login(name: str = "", steps=("Identifiants", "Contrôle de sécurité", "Authentification"), hold: float = 2.5, after: float = 1.2):
+def secure_login(name: str = "", steps=("Identifiants", "Contrôle de sécurité", "Authentification"), hold: float = 1.5, after: float = 0.6):
     """Cercle cadenas + 3 étapes qui se cochent une à une, puis « Bienvenue » (≈3,7 s)."""
-    li = "".join(f'<div class="sec-step" style="--d:{0.5 + k * 0.6:.1f}s"><i>✓</i>{html.escape(s)}</div>' for k, s in enumerate(steps))
+    li = "".join(f'<div class="sec-step" style="--d:{0.2 + k * 0.4:.1f}s"><i>✓</i>{html.escape(s)}</div>' for k, s in enumerate(steps))
     box = st.empty()
     box.markdown('<div class="otp-head"><h3>Connexion <b>sécurisée</b></h3><p>Vérification de votre accès…</p></div>'
                  f'<div class="sec-wrap"><div class="sec-ring">{LOCK}</div><div class="sec-steps">{li}</div></div>'

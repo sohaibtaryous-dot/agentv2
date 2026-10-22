@@ -116,7 +116,7 @@ def cells(code: str):
 
 
 def success_animation(letters: str, *, verifying=("Vérification", "en cours…"), verifying_sub="Contrôle du code de sécurité", busy="Vérification du code…",
-                      ok=("Vérifié", "avec succès"), ok_sub="Votre adresse e-mail est confirmée.", ok_btn="Vérifié et sécurisé", delay: float = 2.6):
+                      ok=("Vérifié", "avec succès"), ok_sub="Votre adresse e-mail est confirmée.", ok_btn="Vérifié et sécurisé", delay: float = 1.6):
     """Animation complète (≈2,6 s + 1,1 s) : lettres / chiffres qui tournent puis se rassemblent -> coche verte -> message de succès."""
     digits = str(letters)[:CODE_LEN].ljust(CODE_LEN, "•")
     fly = "".join(f'<div class="otp-fly" style="--dx:{dx}px;--dy:{dy}px;--rot:{rot}deg;animation-delay:{k * 0.06:.2f}s">{html.escape(digits[k])}</div>'
@@ -131,10 +131,10 @@ def success_animation(letters: str, *, verifying=("Vérification", "en cours…"
                  f'<h3>{html.escape(ok[0])} <b>{html.escape(ok[1])}</b></h3><p>{html.escape(ok_sub)}</p></div>'
                  f'<div class="otp-stage"><div class="otp-check" style="opacity:1;animation:none">{ICON_CHECK}</div></div>'
                  f'<div class="otp-btn" style="background:{GREEN};color:#04210f">{html.escape(ok_btn)}</div>', unsafe_allow_html=True)
-    time.sleep(1.1)
+    time.sleep(0.5)
 
 
-def verifying_then_verified(code: str, delay: float = 2.6):
+def verifying_then_verified(code: str, delay: float = 1.6):
     success_animation("".join(ch for ch in str(code) if ch.isdigit()), delay=delay)
 
 
