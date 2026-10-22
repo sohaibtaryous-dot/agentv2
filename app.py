@@ -3236,8 +3236,10 @@ def main():
         st.session_state["theme"] = "Bleu Port"
     ui.inject_css()
     try:
+        import os
         import ui_motion
-        ui_motion.inject()                                   # décorations animées (dépôt de fichiers…)
+        if os.environ.get('TIMAR_NO_MOTION') != '1':
+            ui_motion.inject()                                   # décorations animées (dépôt de fichiers…)
     except Exception:  # noqa: BLE001
         pass
 

@@ -768,6 +768,7 @@ def _verify_step(email: str):
 
 SITE_SETTINGS = [  # (clé, libellé, valeur par défaut, aide)
     ("LOGIN_STYLE", "Style de la page de connexion", "lamp", "glass = carte vitrée dorée · lamp = lampe (tirer le cordon) · panda. Aperçu : ?login=lamp"),
+    ("LITE_MODE", "Mode léger (1 = animations réduites, plus fluide · 0 = bannière animée)", "1", "Conseillé si le site est lent"),
     ("PRO_PRICE_TEXT", "Prix affiché de la formule Pro", "50 $ / mois", "Ex. : 99 $ / mois"),
     ("CONTACT_WHATSAPP", "Numéro WhatsApp (avec indicatif, sans +)", "", "Ex. : 212612345678 — le bouton de contact s'affiche s'il est rempli"),
     ("CONTACT_LABEL", "Texte du bouton de contact", "Pour info, contacter TIMAR", ""),

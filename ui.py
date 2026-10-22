@@ -626,6 +626,15 @@ def _slides() -> str:
 <div class="slide sl-sky">{clouds}{PLANE_SVG}</div>"""
 
 
+def _lite() -> bool:
+    """Mode léger (réglage du site LITE_MODE, activé par défaut) : moins d'animations, site plus fluide."""
+    try:
+        import database
+        return str(database.get_setting("LITE_MODE", "1")).strip().lower() not in ("0", "non", "off", "false")
+    except Exception:  # noqa: BLE001
+        return True
+
+
 def hero_3d(stats: dict | None = None, badge: str = "TIMAR TANGER · DÉDOUANEMENT IMPORT",
             title: str = "Ventilation automatique", highlight: str = "Groupage ALSTOM Fez",
             desc: str = "Factures, packing lists, CMR et manifestes lus automatiquement dans toutes les langues, "
@@ -700,6 +709,8 @@ p{{color:{INK_2};font-size:13.5px;line-height:1.55;max-width:760px;margin:8px au
   <div class="cap"><h1>{html.escape(title)} <span class="g">{html.escape(highlight)}</span></h1><p>{html.escape(desc)}</p>
   <div class="stats">{chips}</div></div></div>
 </body></html>"""
+    if _lite():       # mode léger : bannière fixe (1re diapositive), sans animations permanentes
+        page = page.replace("</style></head>", "*{animation:none!important}.slide:not(:first-child){display:none}.dots{display:none}</style></head>", 1)
     components.html(skin(page), height=(238 + 190) if chips else (238 + 140))
 
 
