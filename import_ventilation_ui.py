@@ -172,7 +172,8 @@ def _render_ventilation_section(bl_final: pd.DataFrame, kind: str = "export"):
            repr(manual) if manual else "auto", matricule)
     suffix = "IMPORT" if imp else "DUM"
     if st.button(f"Générer VENTILATION_{suffix}.xlsx + ANNEXE_{suffix}.xlsx", type="primary", icon=":material/calculate:", key=f"{P}_go", disabled=not dest):
-        with st.spinner("Remplissage du modèle et de l'annexe (≈ 1 min)…"):
+        import ui_game
+        with st.spinner("Remplissage du modèle et de l'annexe (≈ 1 min)…"), ui_game.playing():
             if imp:
                 data = vi.fill_template(tpl, vent, ref.dest_raw.get(dest, dest), rate, fret, acc, matricule)
                 annexe = vi.build_annexe(vent, rate, fret, acc, matricule, tpl)

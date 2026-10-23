@@ -321,10 +321,12 @@ def render_import(ocr, ai_cfg, ai_label: str, basis: str):
     if launch:
         progress = st.progress(0.0, text="Initialisation...")
         try:
-            if by_client:
-                result = core.run_pipeline_clients(groups, ref_file, ocr, basis, progress, ai_cfg)
-            else:
-                result = core.run_pipeline(usable, ref_file, ocr, basis, progress, ai_cfg)
+            import ui_game
+            with ui_game.playing():                              # mini-jeu pendant le traitement (disparaît à la fin)
+                if by_client:
+                    result = core.run_pipeline_clients(groups, ref_file, ocr, basis, progress, ai_cfg)
+                else:
+                    result = core.run_pipeline(usable, ref_file, ocr, basis, progress, ai_cfg)
         except Exception as exc:  # garde-fou : l'application ne doit jamais « planter »
             progress.empty()
             st.error(f"Le traitement n'a pas pu aboutir ({type(exc).__name__}: {exc}). Vos fichiers n'ont pas été "

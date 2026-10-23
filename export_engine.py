@@ -1404,6 +1404,7 @@ def _render_ventilation_section(bl_final: pd.DataFrame, kind: str = "export"):
                         format_func=lambda n: f"{n} — {ref.destinations[n]}")
     rate = c2.number_input("Taux de change (DH pour 1 devise)", min_value=0.0, value=default_rate, step=0.0001, format="%.4f", key=f"{P}_rate")
     fret = c3.number_input("Fret (devise)", min_value=0.0, value=0.0, step=1.0, key=f"{P}_fret")
+    fixbox = st.container() if not imp else None                    # case « poids connu d'un article » (EXPORT), remplie une fois les articles construits
     fret_note = ""
     if imp:                                                          # le fret peut être saisi en dirhams ou dans la devise du dossier
         _cur = sorted({str(c) for c in (bl_final["_devise"] if "_devise" in bl_final else []) if str(c) not in ("", "nan", "None")})
@@ -1486,6 +1487,23 @@ def _render_ventilation_section(bl_final: pd.DataFrame, kind: str = "export"):
         else:
             manual = {"articles": chosen, "assign_ref": {vx.norm_ref(k): assigned.get(k, 1) for k in keys}}
         vent = build_vent(bl_final, ref, manual=manual)
+    fix_sig = None
+    if fixbox is not None and vent.articles:
+        with fixbox:
+            opts: dict = {}                                           # une entrée par LIGNE (les références répétées ne sont pas fusionnées)
+            for ai, art in enumerate(vent.articles):
+                for li, l in enumerate(art.lines):
+                    opts[(ai, li)] = (f"L{len(opts) + 1} · {str(l['ref']).strip()} — {(l.get('desc') or '')[:30]} · qté {l['qty']:g} · "
+                                      f"facture {l.get('inv', '')} · article {ai + 1}")      # n° de ligne : libellés toujours distincts
+            fa, fb = st.columns([2, 1])
+            picks = fa.multiselect("Références dont je connais le poids", list(opts), format_func=lambda k: opts[k], key=f"{P}_fixrefs",
+                                   placeholder="Choisir les références…",
+                                   help="Quand la packing list ne donne que le total de plusieurs pièces : choisissez les références dont vous connaissez le poids. "
+                                        "Chacune reçoit le poids saisi (par référence) ; le reste du poids net du dossier est réparti sur les autres références.")
+            unit = fb.number_input("Poids par référence (kg)", min_value=0.0, value=0.0, step=0.5, format="%.3f", key=f"{P}_fixw")
+        if unit > 0 and picks:
+            vent.notes = vent.notes + vx.apply_ref_net(vent, set(picks), unit)
+            fix_sig = (tuple(sorted(picks)), round(unit, 4))
     cost = vi.costs(vent, rate, fret, acc) if imp else None
     st.dataframe(vent.summary_df(rate, cost["coef"] if cost else 1.0), use_container_width=True, hide_index=True,
                  column_config={"Poids net (kg)": st.column_config.NumberColumn(format="%.3f"),
@@ -1504,10 +1522,11 @@ def _render_ventilation_section(bl_final: pd.DataFrame, kind: str = "export"):
         with st.expander(f"Références à vérifier ({len(vent.missing)})"):
             st.dataframe(pd.DataFrame(vent.missing), use_container_width=True, hide_index=True)
     sig = (dest, round(rate, 4), round(fret, 2), round(acc, 2), guess, (split, round(ratio, 4)) if imp else None, len(bl_final), round(t["valeur"], 2), round(t["net"], 3),
-           repr(manual) if manual else "auto", matricule)
+           repr(manual) if manual else "auto", matricule, fix_sig)
     suffix = "IMPORT" if imp else "DUM"
     if st.button(f"Générer VENTILATION_{suffix}.xlsx + ANNEXE_{suffix}.xlsx", type="primary", icon=":material/calculate:", key=f"{P}_go", disabled=not dest):
-        with st.spinner("Remplissage du modèle et de l'annexe (≈ 1 min)…"):
+        import ui_game
+        with st.spinner("Remplissage du modèle et de l'annexe (≈ 1 min)…"), ui_game.playing():
             if imp:
                 data = vi.fill_template(tpl, vent, ref.dest_raw.get(dest, dest), rate, fret, acc, matricule)
                 annexe = vi.build_annexe(vent, rate, fret, acc, matricule, tpl)
@@ -1585,8 +1604,10 @@ def render_export(ocr, ai_cfg=None, ai_label: str = ""):
     if go:
         progress = st.progress(0.0, text="Initialisation...")
         try:
-            r = run_export_pipeline(files, ocr, "client" if mode.startswith("Client") else "supplier", progress,
-                                    ai_cfg)
+            import ui_game
+            with ui_game.playing():                              # mini-jeu pendant le traitement (disparaît à la fin)
+                r = run_export_pipeline(files, ocr, "client" if mode.startswith("Client") else "supplier", progress,
+                                        ai_cfg)
         except Exception as exc:
             progress.empty()
             st.error(f"Erreur pendant le traitement : {exc}")
